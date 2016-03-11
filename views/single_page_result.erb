@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <style>
+    .form-element {
+      width: 220px;
+    }
+    p, h3 {
+      font-family: monospace;
+    }
+  </style>
+
+</head>
+
+<body>
+
+    <h3>Hosted Fields, with PayPal and 3D Secure</h3>
+    <p><%= @successful %> <%= @message %></p>
+    <p><a href='<%= @link %>' target="_blank">Click here for more information</a></p>
+    <p><a href='<%= '/' %>'>Create another transaction</a></p>
+
+
+</body>
+
+</html>

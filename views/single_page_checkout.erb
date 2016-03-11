@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html>
+
+<!-- TO DO: standardize '' vs "" -->
+<!-- TO DO: relative sizes and positioning -->
+<!-- TO DO: css stylesheet -->
+
+<head>
+
+  <style>
+    .form-element {
+      width: 220px;
+    }
+    .hosted-container {
+      height: 20px;
+      background-color: #C8D6E8;
+    }
+    p, h3 {
+      font-family: monospace;
+    }
+  </style>
+
+  <!-- Scripts: braintree.js; jquery -->
+  <!-- TO DO: check versions -->
+  <script src="https://js.braintreegateway.com/js/braintree-2.21.0.min.js"></script>
+  <!--  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script> -->
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/2.2.0/jquery.min.js"></script>
+
+</head>
+
+<body>
+
+  <h3>Welcome to the Anti-Dyad Institute, and thank you for giving us your money to fight irresponsible cloning.</h3>
+
+<!-- Collector form: for getting amount + currency from customer -->
+<!-- before initializing braintree with that information -->
+  <form id="choose-your-own-adventure" action="/">
+
+    <p class="form-element">
+      <!-- TO DO: add validation on the amount field to make it numeric only -->
+      $<input name="amount_collector" id="amount_collector" placeholder="00.00" size="8" required>
+      <select name="currency_collector" id="currency_collector">
+        <!-- TO DO?: update these values with constants? -->
+        <option value="USD">USD</option>
+        <option value="CAD">CAD</option>
+        <option value="EUR">EUR</option>
+        <option value="GBP">GBP</option>
+      </select>
+      <input type="submit" id="submitButtonForCollector" value="Give money!">
+    </p>
+      <input type="button" value="Reset" id="resetButtonForCollector" class="form-element" onclick="resetCollectorAndTearDown()"
+      hidden>
+    <p>
+    </p>
+
+  </form>
+
+<!-- Hosted Fields form -->
+  <form id="hosted-checkout" action="/create_transaction" method="post">
+    
+    <p>
+      <label for="card-number">Card Number:
+        <div id="card-number" class="hosted-container form-element"></div>
+      </label>
+    </p>
+    <p>
+      <label for="expiration-date">Expiration Date:</label>
+      <div id="expiration-date" class="hosted-container form-element"></div>
+    </p>
+    <p>
+      <label for="cvv">CVV:</label>
+      <div id="cvv" class="hosted-container form-element"></div>
+    </p>
+    <p>
+      <label for="postal-code">Billing Address Postal Code:</label>
+      <div id="postal-code" class="hosted-container form-element"></div>
+    </p>
+
+    <div id="paypal-button" class="form-element"></div>
+
+    <!-- Hidden fields to store information from the collector form (amount, currency code) -->
+    <!-- and for the nonce and device data -->
+    <!-- TO DO?: turn this into a JSON? -->
+    <p>
+      <input type="hidden" name="noncense" id="noncense" value="not a nonce">
+      <input type="hidden" name="device_data" id="device_data" value="not device data">
+      <input type="hidden" name="amount" id="amount" value="not an amount">
+      <input type="hidden" name="currency" id="currency" value="not a currency code">
+    </p>
+    
+    <p>
+      <input type="submit" value="Pay Now!" />
+    </p>
+
+  </form>
+
+<!-- Braintree badge: -->
+  <a href="https://sandbox.braintreegateway.com/merchants/ryqy4yyw7m5bf92h/verified" target="_blank">
+    <img src="https://s3.amazonaws.com/braintree-badges/braintree-badge-wide-dark.png"  class="form-element" height="35px" border="0"/>
+  </a>
+ 
+ <!-- Scripts -->
+  <script>
+
+    // declare variable for tracking whether a braintree instance has been created
+    var braintreeIsSetup = false;
+
+    // ON PAGE LOAD:
+    $(document).ready(function() {
+      // hide hosted fields form (using .hide() instead of <hidden> for consistency with .show())
+      $("#hosted-checkout").hide();
+    })
+    // TO DO: do further research to find out whether it makes more sense to
+      // a) create a variable and assign it true or false
+      // when loading page / calling braintree.setup() / tearing down
+      // b) create a variable to store the braintree object
+      // and check whether it's null
+
+    // RESET BUTTON FOR COLLECTOR FORM:
+    // On clicking the rest button, reset page to original state
+    function resetCollectorAndTearDown() {
+      // teardown braintree.setup if braintree is set up
+      if (braintreeIsSetup) {
+        braintreeInstance.teardown(function() {
+          braintreeInstance = null;
+          braintreeIsSetup = false;
+        })
+      }
+      console.log("braintreeIsSetup == " + braintreeIsSetup);
+      // re-enable disabled collector form fields
+      $("#amount_collector").prop('readonly', false);
+      $("#currency_collector").prop('disabled', false);
+      // re-hide the hosted fields form
+      $("#hosted-checkout").hide();
+      // re-hide the reset button
+      $("#resetButtonForCollector").hide();
+      // reset amount & currency fields in checkout form
+      // to not-yet-set placeholder
+      $("#amount").val("not an amount");
+      $("#currency").val("not a currency");
+      // re-enable disabled collector submit button
+      $("#submitButtonForCollector").prop('disabled', false);
+    }
+
+    // ON SUBMITTING COLLECTOR FORM:
+    // grab values from collector form
+    // set them read only
+    // pass values to and run braintree.setup
+    // onReady for braintree.setup:
+      // show HF form
+      // show reset/teardown button
+    $("#choose-your-own-adventure").submit(function(event) {
+      console.log("braintreeIsSetup == " + braintreeIsSetup);
+      // disable self
+      $("#submitButtonForCollector").prop('disabled', true);
+      // set amount & currency fields in collector form to read only
+      $("#amount_collector").prop('readonly', true);
+      $("#currency_collector").prop('disabled', true);
+      // set amount & currency fields in checkout form
+      // to the values of the corresponding fields in collector form
+      $("#amount").val($("#amount_collector").val());
+      $("#currency").val($("#currency_collector").val());
+      // run braintree.setup
+      if (braintreeIsSetup === false) {
+        braintree.setup(
+          "<%= @client_token %>",
+          "custom",
+          {
+            id: "hosted-checkout",
+            hostedFields: {
+              styles: {
+                "input": {"font-family": "monospace"},
+                '.hosted-container': {"background": "none",},
+              },
+              number: {selector: "#card-number", placeholder: "Credit Card Number"},
+              cvv: {selector: "#cvv", placeholder: "CVV"},
+              expirationDate: {selector: "#expiration-date", placeholder: "MM/YY or MM/YYYY"},
+              postalCode: {selector: "#postal-code", placeholder: "Zip"},
+            },
+            paypal: {
+              container: "paypal-button",
+              paymentMethodNonceInputField: "noncense",
+              singleUse: true,
+              amount: Number($("#amount").val()),
+              currency: $("#currency").val(),
+              locale: 'en_us',
+              displayName: "HIJACKED: THE DYAD INSTITUTE",
+              enableShippingAddress: true,
+              enableBillingAddress: true,
+              onSuccess: function (nonce, err) {
+                console.log("PayPal success: " + nonce);
+              },
+              onCancelled: function (obj) {
+                console.log("PayPal cancelled.");
+              },
+              // onAuthorizationDismissed: function () {
+                // console.log("PayPal authorization cancelled.");
+              // },
+            },
+            dataCollector: {
+              kount: {environment: 'sandbox'},
+              paypal: true,
+            },
+            onError: function (obj) {
+              console.log("Error! " + JSON.stringify(obj));
+            },
+            onReady: function (integration) {
+              braintreeIsSetup = true;
+              // Show Hosted Fields form:
+              $("#hosted-checkout").show();
+              braintreeInstance = integration;
+              console.log("Ready! braintreeIsSetup == " + braintreeIsSetup + ": " + JSON.stringify(integration));
+              // Populate hidden device data field with device data generated by braintree.js:
+              $("#device_data").val(integration.deviceData);
+              // Show reset button to revert to previous page state:
+              $("#resetButtonForCollector").show();
+            },
+            onPaymentMethodReceived: function (obj) {
+              // Check if the payment method received is of type PayPalAccount or CreditCard
+              // to determine if we should run 3ds verification
+              // If credit card, run 3ds:
+              if (obj.type === "CreditCard") {
+                // Declare client for 3ds:
+                var client = new braintree.api.Client({
+                  clientToken: "<%= @client_token %>"
+                });
+                // Verify 3ds:
+                client.verify3DS({
+                  amount: $("#amount").val(),
+                  creditCard: obj.nonce,
+                }, function (error, response) {
+                  if (!error) {
+                    // grab nonce and submit form
+                    console.log(JSON.stringify(response));
+                    $("#noncense").val(response.nonce);
+                    console.log("noncense value: " + $("#noncense").val());
+                    $("#merchant_account_id").prop('disabled', false);
+                    $("#hosted-checkout").submit();
+                  } else {
+                    alert(error.message);
+                    console.log(error.message);
+                  }
+                });
+              }
+              // If PayPal account, just grab nonce and submit form
+              else { 
+                // TO DO: CONSOLIDATE THIS WITH THE !error CONDITION W/IN VERIFY 3DS
+                console.log(JSON.stringify(obj));
+                // $("#noncense").val(obj.nonce);
+                console.log("noncense value: " + $("#noncense").val());
+                $("#hosted-checkout").submit();
+              }
+            },
+          }
+        );
+      }
+      return false;
+    });
+
+  </script>
+
+</body>
+
+<!-- TO DO?: incorporate results into this page? -->
+
+</html>
