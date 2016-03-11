@@ -8,7 +8,7 @@ implementing Hosted Fields, PayPal Checkout flow, 3D Secure, device data, teardo
 Before using:
 
 verify that all files are present and in the following directory structure:
-	auto.rb
+	autoloader_braintree_config.rb
 	single_page_app.rb
 	views ->
 		single_page_checkout.erb
