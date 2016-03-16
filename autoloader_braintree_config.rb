@@ -13,7 +13,3 @@ MERCHANT_ACCOUNT_ID_USD = "q6p2fn8ssnfjfz2p"
 MERCHANT_ACCOUNT_ID_CAD = "anti-dyad_CAD"
 MERCHANT_ACCOUNT_ID_EUR = "anti-dyad_EUR"
 MERCHANT_ACCOUNT_ID_GBP = "anti-dyad_GBP"
-
-# TO DO: consider where it makes the most sense structurally to put these
-DO_NOT_STORE_CUSTOMER = "don't store"
-CREATE_NEW_CUSTOMER = "create new customer"
