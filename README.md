@@ -1,9 +1,6 @@
-README
-
-
 A single-page checkout app, using [Braintree]("https://developers.braintreepayments.com"). Implements Hosted Fields, PayPal Checkout flow, 3D Secure, device data, teardown, and the transaction API.
 
-**Before using:**
+<h4>Before using:</h4>
 
 + Verify that all files are present and in the following directory structure:
 ```
@@ -18,7 +15,7 @@ views
  + See [developers.braintreepayments.com/start/hello-server/ruby]("developers.braintreepayments.com/start/hello-server/ruby") for Braintree's requirements for Ruby version, etc
 
 
-**To use:**
+<h4>To use:</h4>
 
 Run single_page_app.rb from the command line with
 
@@ -30,7 +27,7 @@ If you're using the modular app branch, you can also use
 
 Then visit the appropriate localhost IP address to create a transaction. Choose an amount and a currency, fill in credit card information or click the PayPal button to use PayPal, verify 3D Secure information if prompted, confirm payment, and observe the results.
 
-**Breakdown of flow by files:**
+<h4>Breakdown of flow by files:</h4>
 
 *autoloader_braintree_config*:
 + requires the necessary gems: rubygems, braintree, and sinatra for running the app  
