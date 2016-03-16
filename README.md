@@ -21,11 +21,11 @@ Run single_page_app.rb from the command line with
 
 `shotgun single_page_app.rb`
 
-If you're using the modular app branch, you can also use
+If you're using the modular branch, you can also use
 
 `ruby single_page_app.rb` or `sinatra single_page_app.rb`
 
-Then visit the appropriate localhost IP address to create a transaction. Choose an amount and a currency, fill in credit card information or click the PayPal button to use PayPal, verify 3D Secure information if prompted, confirm payment, and observe the results.
+Then visit the appropriate localhost address to create a transaction. Choose an amount and a currency, fill in credit card information or click the PayPal button to use PayPal, verify 3D Secure information if prompted, confirm payment, and observe the results.
 
 <h4>Breakdown of flow by files:</h4>
 
