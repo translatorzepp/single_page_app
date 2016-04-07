@@ -31,12 +31,12 @@ post '/create_transaction' do
     # Create sale 
     result = Braintree::Transaction.sale(
       :amount => params[:amount],
-      # :merchant_account_id => merchant_account_id,
+      :merchant_account_id => merchant_account_id,
       :payment_method_nonce => params[:noncense],
-      # :device_data => params[:device_data],
-      # :options => {
-        # :submit_for_settlement => true
-      # },
+      :device_data => params[:device_data],
+      :options => {
+        :submit_for_settlement => true
+      },
     )
 
     # Check for success of sale; set text for display on result page
